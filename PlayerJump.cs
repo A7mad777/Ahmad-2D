@@ -12,6 +12,8 @@ public class PlayerJump : MonoBehaviour
     public float jumpTime;
     private float jumpTimeCounter;
     private bool stoppedJumping;
+    public float hangTime = 0.2f;
+    private float hangCounter;
 
     [Header("Ground Details")]
     [SerializeField] private Transform groundCheck;
@@ -42,6 +44,16 @@ public class PlayerJump : MonoBehaviour
         //what it means to be grounded
         grounded = Physics2D.OverlapCircle(groundCheck.position, radOCircle, whatIsGround);
 
+        if(grounded)
+        {
+            hangCounter = hangTime;
+        }
+        else
+        {
+            hangCounter -= Time.deltaTime;
+        }
+
+
         if (grounded)
         {
             jumpTimeCounter = jumpTime;
@@ -50,7 +62,7 @@ public class PlayerJump : MonoBehaviour
         }
 
         //if we press the jump button
-        if (Input.GetButtonDown("Jump") && grounded)
+        if (Input.GetButtonDown("Jump") && hangCounter > 0f)
         {
             //jump!!!
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
