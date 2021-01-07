@@ -2,61 +2,106 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(Animator))]
+
 public class PlayerJump : MonoBehaviour
 {
     [Header("Jump Details")]
-    [SerializeField] public float jumpForce;
+    public float jumpForce;
     public float jumpTime;
     private float jumpTimeCounter;
-    private bool stoppedjumping;
-    
+    private bool stoppedJumping;
 
     [Header("Ground Details")]
-    [SerializeField] private Transform groundcheck;
+    [SerializeField] private Transform groundCheck;
     [SerializeField] private float radOCircle;
     [SerializeField] private LayerMask whatIsGround;
-    [SerializeField] public bool grounded;
+    public bool grounded;
 
-    [Header("Component")]
+    [Header("Components")]
     private Rigidbody2D rb;
+    private Animator myAnimator;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        myAnimator = GetComponent<Animator>();
         jumpTimeCounter = jumpTime;
     }
 
+    //myAnimator.SetBool("falling", true);
+    //myAnimator.SetBool("falling", false);
+
+    //myAnimator.SetTrigger("jump");
+    //myAnimator.ResetTrigger("jump");
+
+
     private void Update()
     {
-        grounded = Physics2D.OverlapCircle(groundcheck.position, radOCircle, whatIsGround);
+        //what it means to be grounded
+        grounded = Physics2D.OverlapCircle(groundCheck.position, radOCircle, whatIsGround);
 
-        if(grounded)
+        if (grounded)
         {
             jumpTimeCounter = jumpTime;
+            myAnimator.ResetTrigger("jump");
+            myAnimator.SetBool("falling", false);
         }
 
-        if(Input.GetButtonDown("Jump") && grounded)
+        //if we press the jump button
+        if (Input.GetButtonDown("Jump") && grounded)
         {
-            //Jmping
+            //jump!!!
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            stoppedjumping = false;
+            stoppedJumping = false;
+            //tell the animator to play jump anim
+            myAnimator.SetTrigger("jump");
         }
 
-        if(Input.GetButton("Jump") && !stoppedjumping && (jumpTimeCounter > 0))
+        //if we hold the jump button
+        if (Input.GetButton("Jump") && !stoppedJumping && (jumpTimeCounter > 0))
         {
-            //MidJump
+            //jump!!!
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
             jumpTimeCounter -= Time.deltaTime;
+            myAnimator.SetTrigger("jump");
         }
-        if(Input.GetButtonUp("Jump"))
+
+        //if we release the jump button
+        if (Input.GetButtonUp("Jump"))
         {
             jumpTimeCounter = 0;
-            stoppedjumping = true;
+            stoppedJumping = true;
+            myAnimator.SetBool("falling", true);
+            myAnimator.ResetTrigger("jump");
+        }
+
+        if (rb.velocity.y < 0)
+        {
+            myAnimator.SetBool("falling", true);
         }
     }
 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawSphere(groundcheck.position, radOCircle);
+        Gizmos.DrawSphere(groundCheck.position, radOCircle);
+    }
+
+    private void FixedUpdate()
+    {
+        HandleLayers();
+    }
+
+    private void HandleLayers()
+    {
+        if (!grounded)
+        {
+            myAnimator.SetLayerWeight(1, 1);
+        }
+        else
+        {
+            myAnimator.SetLayerWeight(1, 0);
+        }
     }
 }
