@@ -68,7 +68,7 @@ public class EnemyWalk : MonoBehaviour
 
     private void Start()
     {
-        alive = transform.Find("Alive").gameObject;
+        
         aliveRb = alive.GetComponent<Rigidbody2D>();
         aliveAnim = alive.GetComponent<Animator>();
 
@@ -90,6 +90,23 @@ public class EnemyWalk : MonoBehaviour
                 UpdateDeadState();
                 break;
         }
+    }
+
+    //TakingDAmage
+
+    public void TakeDamage(int damage)
+    {
+        currentHealth -= damage;
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    void Die()
+    {
+        Debug.Log("Enemy died!");
     }
 
     //--WALKING STATE--------------------------------------------------------------------------------
